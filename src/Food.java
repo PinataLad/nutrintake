@@ -28,6 +28,6 @@ public class Food {
     }
 
     public String getAll() {
-        return name + " " + calories + " " + proteins + " " + sugars + " ";
+        return "Name: " + name + " | Calories: " + calories + " | Protein: " + proteins + " | Sugars:" + sugars;
     }
 }

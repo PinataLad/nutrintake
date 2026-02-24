@@ -8,39 +8,46 @@ public class Main {
 
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("1. Add Food");
-        System.out.println("2. Get Daily Log");
-        System.out.println("3. Exit");
-        System.out.println("Enter your choice by number");
-        int choice = Integer.valueOf(scanner.nextLine());
 
         while (true) {
-            if (choice == 1) {
 
-                System.out.println("Enter Food Name: ");
-                String name = scanner.nextLine();
+            System.out.println("1. Add Food");
+            System.out.println("2. Get Daily Log");
+            System.out.println("3. Exit");
+            System.out.println("Enter your choice by number");
+            int choice = Integer.valueOf(scanner.nextLine());
 
-                if (name.equals("")) {
+            switch (choice) {
+
+                case 1:
+
+                    System.out.println("Enter Food Name: ");
+                    String name = scanner.nextLine();
+
+                    System.out.println("Enter Calorie Amount: ");
+                    int calories = Integer.valueOf(scanner.nextLine());
+                    System.out.println("Enter Protein Amount: ");
+                    int protein = Integer.valueOf(scanner.nextLine());
+                    System.out.println("Enter Sugar Amount: ");
+                    int sugar = Integer.valueOf(scanner.nextLine());
+
+                    Food food = new Food (name, calories, protein, sugar);
+                    Log.add(food);
+
                     break;
-                }
 
-                System.out.println("Enter Calorie Amount: ");
-                int calories = Integer.valueOf(scanner.nextLine());
-                System.out.println("Enter Protein Amount: ");
-                int protein = Integer.valueOf(scanner.nextLine());
-                System.out.println("Entere Sugar Amount: ");
-                int sugar = Integer.valueOf(scanner.nextLine());
+                case 2:
 
-                Food food = new Food(name, calories, protein, sugar);
-            }
+                    for (Food data: Log) {
+                        System.out.println(data.getAll());
+                        System.out.println("");
 
-            if (choice == 2) {
+                    }
 
-                break;
-            }
+                    break;
 
-            if (choice == 3) {
-                break;
+                case 3:
+                    return;
             }
         }
     }
