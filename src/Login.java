@@ -4,19 +4,29 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Scanner;
 
 public class Login {
 
     private static final String myPepper = "MyTestPepper";
 
     public static void main(String[] args) {
-        String usernameInput = "MyTestUser";
-        String passwordInput = "MyTestPassword";
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter your username: ");
+        String usernameInput = scanner.nextLine();
+
+        System.out.print("Enter your password: ");
+        String passwordInput = scanner.nextLine();
+
         String filePath = "AccountData.txt";
 
         boolean success = verifyUserLoginSuccess(usernameInput, passwordInput, filePath, ",");
 
         System.out.println(success);
+
+        scanner.close();
     }
 
     public static String hashPassword(String salt, String password) {
