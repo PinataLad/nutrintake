@@ -169,3 +169,12 @@ button:hover {
 .table tbody tr:hover {
   background: #f9fafb;
 }
+
+.flash {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #f0d9a6;
+  background: #fff7df;
+  margin: 10px 0;
+}
+.muted { color: #666; }

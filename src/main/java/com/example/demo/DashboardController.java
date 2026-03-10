@@ -9,6 +9,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import jakarta.servlet.http.HttpSession;
+
 
 
 @Controller
@@ -19,7 +21,10 @@ public class DashboardController {
 
 
     @GetMapping("/dashboard")
-    public String dashboard(Model model) {
+    public String dashboard(Model model, HttpSession session) {
+        if (session.getAttribute("userEmail") == null) {
+            return "redirect:/login";
+        }
         model.addAttribute("viewDate", "2026-02-22");
 
         model.addAttribute("foods", foods);
