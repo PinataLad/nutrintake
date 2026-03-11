@@ -5,12 +5,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Controller
 public class AuthController {
 
-    // temporary demo login (replace with database later)
-    private final String DEMO_EMAIL = "test@sdsu.edu";
-    private final String DEMO_PASS  = "password";
+    private final Map<String, String> users = new HashMap<>();
 
     @GetMapping("/login")
     public String loginPage() {
@@ -23,13 +24,42 @@ public class AuthController {
                           HttpSession session,
                           RedirectAttributes ra) {
 
-        if (DEMO_EMAIL.equals(email) && DEMO_PASS.equals(password)) {
-            session.setAttribute("userEmail", email); // "logged in"
+        String savedPassword = users.get(email);
+
+        if (savedPassword != null && savedPassword.equals(password)) {
+            session.setAttribute("userEmail", email);
             return "redirect:/dashboard";
         }
 
         ra.addFlashAttribute("msg", "Invalid email or password");
         return "redirect:/login";
+    }
+
+    @GetMapping("/register")
+    public String registerPage() {
+        return "register";
+    }
+
+    @PostMapping("/register")
+    public String doRegister(@RequestParam String email,
+                             @RequestParam String password,
+                             @RequestParam String confirmPassword,
+                             HttpSession session,
+                             RedirectAttributes ra) {
+
+        if (users.containsKey(email)) {
+            ra.addFlashAttribute("msg", "That email is already registered.");
+            return "redirect:/register";
+        }
+
+        if (!password.equals(confirmPassword)) {
+            ra.addFlashAttribute("msg", "Passwords do not match.");
+            return "redirect:/register";
+        }
+
+        users.put(email, password);
+        session.setAttribute("userEmail", email); // auto-login after signup
+        return "redirect:/dashboard";
     }
 
     @PostMapping("/logout")
