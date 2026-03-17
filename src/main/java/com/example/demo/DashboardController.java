@@ -11,25 +11,34 @@ import java.util.List;
 import java.util.Map;
 import jakarta.servlet.http.HttpSession;
 
-
-
+//dashboard controller
+//handles: dashboard rendering, food creation, food logging, and daily total calculation.
 @Controller
 public class DashboardController {
 
+    // temporary in memory storage for food creations, each food is stored as a map that conatins: name, calories, sugar, protein,
     private List<Map<String, Object>> foods = new ArrayList<>();
+
+    // Temporary in-memory storage for logged food entries. Each log stores calculated nutrient totals for servings.
     private List<Map<String, Object>> logs = new ArrayList<>();
 
-
+    //displays the dashbaord
     @GetMapping("/dashboard")
     public String dashboard(Model model, HttpSession session) {
+
+        // Redirect to login if user is not authenticated
         if (session.getAttribute("userEmail") == null) {
             return "redirect:/login";
         }
+
+        // Hardcoded date for development (can later be dynamic)
         model.addAttribute("viewDate", "2026-02-22");
 
+        // Send food and log data to Thymeleaf template
         model.addAttribute("foods", foods);
         model.addAttribute("logs", logs);
 
+        // Calculate daily totals
         double totalCalories = 0;
         double totalProtein = 0;
         double totalSugar = 0;
@@ -40,6 +49,7 @@ public class DashboardController {
             totalSugar += (double) log.get("sugar");
         }
 
+        // Add totals to model
         model.addAttribute("calories", totalCalories);
         model.addAttribute("protein", totalProtein);
         model.addAttribute("sugar", totalSugar);
@@ -47,21 +57,18 @@ public class DashboardController {
         return "dashboard";
     }
 
+    //Displays the foods management page.
     @GetMapping("/foods")
     public String foods(Model model) {
         model.addAttribute("foods", foods);
         return "foods";
     }
 
+    //Handles food creation form submission. Adds a new food definition to in-memory storage.
     @PostMapping("/foods")
-    public String createFood(
-            @RequestParam String name,
-            @RequestParam double calories,
-            @RequestParam double protein,
-            @RequestParam double sugar,
-            RedirectAttributes ra
-    ) {
+    public String createFood(@RequestParam String name, @RequestParam double calories, @RequestParam double protein, @RequestParam double sugar, RedirectAttributes ra) {
 
+        // Store food as a Map
         foods.add(Map.of(
                 "name", name,
                 "calories", calories,
@@ -69,19 +76,17 @@ public class DashboardController {
                 "sugar", sugar
         ));
 
+        // Flash confirmation message
         ra.addFlashAttribute("msg", "Created food: " + name);
 
         return "redirect:/dashboard";
     }
 
 
+    //Handles food logging form submission. Calculates nutrient totals and stores the result in logs list.
     @PostMapping("/logs")
-    public String logFood(
-            @RequestParam String foodName,
-            @RequestParam double servings,
-            @RequestParam(required = false) String date,
-            RedirectAttributes ra
-    ) {
+    public String logFood(@RequestParam String foodName, @RequestParam double servings, @RequestParam(required = false) String date, RedirectAttributes ra)
+    {
         for (Map<String, Object> food : foods) {
             if (food.get("name").equals(foodName)) {
 
@@ -89,6 +94,7 @@ public class DashboardController {
                 double baseProtein = (double) food.get("protein");
                 double baseSugar = (double) food.get("sugar");
 
+                // Store calculated totals for logged serving
                 logs.add(Map.of(
                         "foodName", foodName,
                         "servings", servings,
@@ -100,6 +106,8 @@ public class DashboardController {
                 break;
             }
         }
+
+        // Flash confirmation message
         ra.addFlashAttribute("msg", "Logged " + servings + " serving(s) of " + foodName);
         return "redirect:/dashboard";
     }
