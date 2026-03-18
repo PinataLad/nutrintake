@@ -22,6 +22,10 @@ public class DashboardController {
     // Temporary in-memory storage for logged food entries. Each log stores calculated nutrient totals for servings.
     private List<Map<String, Object>> logs = new ArrayList<>();
 
+    private double calorieGoal = 2000;
+    private double proteinGoal = 150;
+    private double sugarGoal = 50;
+
     //displays the dashbaord
     @GetMapping("/dashboard")
     public String dashboard(Model model, HttpSession session) {
@@ -56,6 +60,30 @@ public class DashboardController {
 
         return "dashboard";
     }
+
+    @GetMapping("/goals")
+    public String goals(Model model) {
+        model.addAttribute("calorieGoal", 2000);
+        model.addAttribute("proteinGoal", 150);
+        model.addAttribute("sugarGoal", 50);
+        return "goals";
+    }
+
+    @PostMapping("/goals")
+    public String updateGoals(
+            @RequestParam double calorieGoal,
+            @RequestParam double proteinGoal,
+            @RequestParam double sugarGoal,
+            RedirectAttributes ra
+    ) {
+        this.calorieGoal = calorieGoal;
+        this.proteinGoal = proteinGoal;
+        this.sugarGoal = sugarGoal;
+
+        ra.addFlashAttribute("msg", "Goals updated successfully");
+        return "redirect:/goals";
+    }
+
 
     //Displays the foods management page.
     @GetMapping("/foods")
