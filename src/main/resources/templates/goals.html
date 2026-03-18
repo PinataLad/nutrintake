@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Goals</title>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" th:href="@{/style.css}">
+</head>
+<body>
+<h1>Nutrition Goals</h1>
+
+<p th:if="${msg}" th:text="${msg}"></p>
+
+<form th:action="@{/goals}" method="post">
+  <label>Calorie Goal:</label>
+  <input type="number" step="0.1" name="calorieGoal" th:value="${calorieGoal}" required>
+
+  <label>Protein Goal:</label>
+  <input type="number" step="0.1" name="proteinGoal" th:value="${proteinGoal}" required>
+
+  <label>Sugar Goal:</label>
+  <input type="number" step="0.1" name="sugarGoal" th:value="${sugarGoal}" required>
+
+  <button type="submit">Save Goals</button>
+</form>
+
+<a th:href="@{/dashboard}">Back to Dashboard</a>
+</body>
+</html>

@@ -17,6 +17,9 @@ public class DashboardController {
     private List<Map<String, Object>> foods = new ArrayList<>();
     private List<Map<String, Object>> logs = new ArrayList<>();
 
+    private double calorieGoal = 2000;
+    private double proteinGoal = 150;
+    private double sugarGoal = 50;
 
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
@@ -40,6 +43,27 @@ public class DashboardController {
         model.addAttribute("sugar", totalSugar);
 
         return "dashboard";
+    }
+    @GetMapping("/goals")
+    public String goals(Model model) {
+        model.addAttribute("calorieGoal", 2000);
+        model.addAttribute("proteinGoal", 150);
+        model.addAttribute("sugarGoal", 50);
+        return "goals";
+    }
+    @PostMapping("/goals")
+    public String updateGoals(
+            @RequestParam double calorieGoal,
+            @RequestParam double proteinGoal,
+            @RequestParam double sugarGoal,
+            RedirectAttributes ra
+    ) {
+        this.calorieGoal = calorieGoal;
+        this.proteinGoal = proteinGoal;
+        this.sugarGoal = sugarGoal;
+
+        ra.addFlashAttribute("msg", "Goals updated successfully");
+        return "redirect:/goals";
     }
 
     @PostMapping("/foods")
