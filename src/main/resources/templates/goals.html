@@ -3,16 +3,12 @@
 <head>
   <title>Goals</title>
   <meta charset="UTF-8">
-  <link rel="stylesheet" th:href="@{/style.css}">
+  <link rel="stylesheet" th:href="@{/css/styles.css}">
 </head>
 <body>
+<div th:replace="fragments/header :: header"></div>
 
 <div class="container">
-  <div class="nav">
-    <a th:href="@{/dashboard}">Dashboard</a>
-    <a th:href="@{/goals}">Goals</a>
-  </div>
-
   <h1>🎯 Nutrition Goals</h1>
 
   <p class="message" th:if="${msg}" th:text="${msg}"></p>
