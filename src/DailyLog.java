@@ -1,11 +1,17 @@
-/*
 
+import javax.xml.crypto.Data;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+
 
 public class DailyLog{
-    private ArrayList<Food> foods = new ArrayList<>();
-    private ArrayList<DailyGoal> goalLog = new ArrayList<>();
+    //private ArrayList<Food> foods = new ArrayList<>();
+    //private ArrayList<DailyGoal> goalLog = new ArrayList<>();
 
+    /*
     //Adds food to array list
     public void addFood(Food food){
         foods.add(food);
@@ -14,6 +20,46 @@ public class DailyLog{
         goalLog.add(goal);
     }
 
+     */
+
+    //Calculates the total sum of the Calories column from the foods table
+    public int getTotalCalories() {
+
+        try (Connection conn = DatabaseManager.connect()) {
+
+            String sql = "SELECT SUM(calories) AS total from foods";
+
+            PreparedStatement stmt = conn.prepareStatement(sql);
+
+            ResultSet resultSet = stmt.executeQuery();
+
+            if(resultSet.next()) {
+                return resultSet.getInt("total");
+            }
+
+            return 0;
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    //prints the total calories
+    public void checkCalories() {
+
+        int total = 0;
+
+        total = getTotalCalories();
+
+        System.out.println("Total Calories: " + total);
+
+    }
+
+}
+
+
+
+    /*
     //Calculates the total calorie amount of current food input
     public int getTotalCalories(){
         int total = 0;
@@ -22,6 +68,8 @@ public class DailyLog{
         }
         return total;
     }
+
+
 
     //Calculates the total protein amount of current food input
     public int getTotalProteins(){
@@ -123,4 +171,4 @@ public class DailyLog{
     }
 }
 
- */
+     */

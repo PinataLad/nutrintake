@@ -44,7 +44,7 @@ public class NutritionService {
 
         try (Connection conn = DatabaseManager.connect()) {
 
-            String sql = "INSERT INTO weekly_log(calories, protein, sugar) VALUES (?, ?, ?)";
+            String sql = "INSERT INTO weekly_logs(calories, protein, sugar) VALUES (?, ?, ?)";
 
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setInt(1, totalCalories);
@@ -80,7 +80,7 @@ public class NutritionService {
 
         try (Connection conn = DatabaseManager.connect()) {
 
-            String sql = "DELETE FROM weekly_log";
+            String sql = "DELETE FROM weekly_logs";
 
             PreparedStatement stmt = conn.prepareStatement(sql);
 
