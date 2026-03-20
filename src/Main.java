@@ -22,8 +22,7 @@ public class Main {
             System.out.println("3. Get Daily Log");
             System.out.println("4. Get Weekly Log");
             System.out.println("5. Delete Logs");
-            System.out.println("6. End Day");
-            System.out.println("7. Exit");
+            System.out.println("6. Exit");
             System.out.println("Enter your choice by number");
 
             System.out.println("");
@@ -104,10 +103,6 @@ public class Main {
                     break;
 
                 case 6:
-
-                    break;
-
-                case 7:
                     return;
 
                 default:
