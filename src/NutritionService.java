@@ -1,5 +1,6 @@
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.time.LocalDate;
 
 public class NutritionService {
     public void addFood(String name, int calories, int protein, int sugar) {
@@ -15,6 +16,11 @@ public class NutritionService {
             stmt.setInt(4, sugar);
 
             stmt.executeUpdate();
+
+            String logsql = "INSERT INTO food_logs(date) VALUES (?)";
+            PreparedStatement logstmt = conn.prepareStatement(logsql);
+            logstmt.setString(1, LocalDate.now().toString());
+            logstmt.executeUpdate();
 
         } catch (Exception e) {
             e.printStackTrace();
