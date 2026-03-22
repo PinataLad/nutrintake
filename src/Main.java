@@ -98,6 +98,8 @@ public class Main {
 
                     else if (input.equals("All")) {
 
+                        service.deleteDaily();
+
                         service.deleteWeekly();
 
                         System.out.println("Done");
