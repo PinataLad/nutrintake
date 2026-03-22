@@ -21,8 +21,9 @@ public class Main {
             System.out.println("2. Add Food");
             System.out.println("3. Get Daily Log");
             System.out.println("4. Get Weekly Log");
-            System.out.println("5. Delete Logs");
-            System.out.println("6. Exit");
+            System.out.println("5. Save day to Weekly Log");
+            System.out.println("6. Delete Logs");
+            System.out.println("7. Exit");
             System.out.println("Enter your choice by number");
 
             System.out.println("");
@@ -73,11 +74,17 @@ public class Main {
 
                 case 4:
 
-
+                    service.printWeeklyLog();
 
                     break;
 
                 case 5:
+
+                    service.saveToWeekly();
+                    System.out.println("Saved to weekly log.");
+                    break;
+
+                case 6:
 
                     System.out.println("Daily, All, or cancel");
 
@@ -102,7 +109,7 @@ public class Main {
 
                     break;
 
-                case 6:
+                case 7:
                     return;
 
                 default:

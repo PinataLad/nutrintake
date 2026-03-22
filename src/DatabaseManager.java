@@ -46,6 +46,7 @@ public class DatabaseManager {
             stmt.execute("""
                 create table IF NOT EXISTS weekly_logs (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    logDate TEXT,
                     calories INTEGER,
                     protein INTEGER,
                     sugar INTEGER

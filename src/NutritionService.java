@@ -1,5 +1,6 @@
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.time.LocalDate;
 
 public class NutritionService {
@@ -50,12 +51,13 @@ public class NutritionService {
 
         try (Connection conn = DatabaseManager.connect()) {
 
-            String sql = "INSERT INTO weekly_logs(calories, protein, sugar) VALUES (?, ?, ?)";
+            String sql = "INSERT INTO weekly_logs(logDate, calories, protein, sugar) VALUES (?, ?, ?, ?)";
 
             PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setDouble(1, totalCalories);
-            stmt.setDouble(2, totalProtein);
-            stmt.setDouble(3, totalSugar);
+            stmt.setString(1, LocalDate.now().toString());
+            stmt.setDouble(2, totalCalories);
+            stmt.setDouble(3, totalProtein);
+            stmt.setDouble(4, totalSugar);
 
             stmt.executeUpdate();
 
@@ -96,5 +98,42 @@ public class NutritionService {
             throw new RuntimeException(e);
         }
 
+    }
+
+    public void saveToWeekly(){
+        DailyLog dailyLog = new DailyLog();
+
+        double calories = dailyLog.getCalories();
+        double protein = dailyLog.getProteins();
+        double sugar = dailyLog.getSugars();
+
+        addWeekly(calories, protein, sugar);
+
+    }
+
+    public void printWeeklyLog(){
+        try (Connection connection = DatabaseManager.connect()){
+
+            String sql = """
+                    SELECT
+                    SUM(calories) AS total_calories,
+                    SUM(protein) AS total_proteins,
+                    SUM(sugar) AS total_sugar
+                    FROM weekly_logs
+                    WHERE logDate >= date('now', '-6 days')
+                    """;
+            PreparedStatement stmt = connection.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery();
+
+            if(rs.next()){
+                System.out.println("Weekly Total:");
+                System.out.println("Calories:" + rs.getDouble("total_calories"));
+                System.out.println("Protein:" + rs.getDouble("total_proteins"));
+                System.out.println("Sugar:" + rs.getDouble("total_sugar"));
+            }
+
+        }catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
