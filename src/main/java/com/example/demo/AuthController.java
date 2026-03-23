@@ -2,18 +2,15 @@ package com.example.demo;
 
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import java.util.HashMap;
-import java.util.Map;
 
 //Handles basic authentication routes like login, registration, and logout.
 //ISSUE: This implementation uses in-memory storage for development purposes. Users will be lost when the application restarts.
 @Controller
 public class AuthController {
-
-    //Temporary in-memory user store (email and password).
-    private final Map<String, String> users = new HashMap<>();
 
     //displays the login page (GET request)
     @GetMapping("/login")
@@ -26,10 +23,9 @@ public class AuthController {
     public String doLogin(@RequestParam String email, @RequestParam String password, HttpSession session, RedirectAttributes ra) {
 
         // Look up stored password for this email (null if user doesn't exist)
-        String savedPassword = users.get(email);
+        boolean success = Login.verifyUserLoginSuccess(email, password, "", "");
 
-        // if credentials are valid then the user is redirected to the dashboard
-        if (savedPassword != null && savedPassword.equals(password)) {
+        if (success) {
             session.setAttribute("userEmail", email);
             return "redirect:/dashboard";
         }
@@ -49,21 +45,23 @@ public class AuthController {
     @PostMapping("/register")
     public String doRegister(@RequestParam String email, @RequestParam String password, @RequestParam String confirmPassword, HttpSession session, RedirectAttributes ra) {
 
-        // Prevent duplicate accounts
-        if (users.containsKey(email)) {
-            ra.addFlashAttribute("msg", "That email is already registered.");
-            return "redirect:/register";
-        }
-
         // checks that both the password fields match
         if (!password.equals(confirmPassword)) {
             ra.addFlashAttribute("msg", "Passwords do not match.");
             return "redirect:/register";
         }
 
-        // Save the user in memory
-        users.put(email, password);
-        session.setAttribute("userEmail", email); // auto-login after signup
+        // Prevent duplicate accounts
+        if (Login.userExists(email)) {
+            ra.addFlashAttribute("msg", "Email is already registered.");
+            return "redirect:/register";
+        }
+
+        String salt = registerUser.generateSalt();
+        String hash = Login.hashPassword(salt, password);
+
+        registerUser.saveUser(email, salt, hash);
+        session.setAttribute("userEmail", email);
         return "redirect:/dashboard";
     }
 

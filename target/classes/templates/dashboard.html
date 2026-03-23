@@ -46,7 +46,7 @@
             <form th:action="@{/logs}" method="post" class="small-form">
                 <label>Food
                     <select name="foodName">
-                        <option th:each="f : ${foods}" th:value="${f.name}" th:text="${f.name}">Food</option>
+                        <option th:each="f : ${foods}" th:value="${f.foodName}" th:text="${f.foodName}">Food</option>
                     </select>
                 </label>
                 <label>Servings
