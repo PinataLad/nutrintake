@@ -41,6 +41,34 @@ public class DashboardController {
         model.addAttribute("logs", getLogs());
         model.addAttribute("viewDate", java.time.LocalDate.now().toString());
 
+<<<<<<< Updated upstream
+=======
+        double calorieGoal = 2000;
+        double proteinGoal = 150;
+        double sugarGoal = 50;
+
+        try (Connection conn = DatabaseManager.connect()) {
+
+            String sql = "SELECT calories, proteins, sugars FROM daily_goals ORDER BY id DESC LIMIT 1";
+
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                calorieGoal = rs.getDouble("calories");
+                proteinGoal = rs.getDouble("proteins");
+                sugarGoal = rs.getDouble("sugars");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        model.addAttribute("calorieGoal", calorieGoal);
+        model.addAttribute("proteinGoal", proteinGoal);
+        model.addAttribute("sugarGoal", sugarGoal);
+
+>>>>>>> Stashed changes
         return "dashboard";
     }
 
