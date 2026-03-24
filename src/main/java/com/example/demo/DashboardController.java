@@ -1,62 +1,45 @@
 package com.example.demo;
 
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import jakarta.servlet.http.HttpSession;
 
 //dashboard controller
 //handles: dashboard rendering, food creation, food logging, and daily total calculation.
 @Controller
 public class DashboardController {
 
-    // temporary in memory storage for food creations, each food is stored as a map that conatins: name, calories, sugar, protein,
-    private List<Map<String, Object>> foods = new ArrayList<>();
+    NutritionService service = new NutritionService();
+    DailyLog dailyLog = new DailyLog();
 
-    // Temporary in-memory storage for logged food entries. Each log stores calculated nutrient totals for servings.
-    private List<Map<String, Object>> logs = new ArrayList<>();
-
-    private double calorieGoal = 2000;
-    private double proteinGoal = 150;
-    private double sugarGoal = 50;
-
-    //displays the dashbaord
+    //displays the dashboard
     @GetMapping("/dashboard")
     public String dashboard(Model model, HttpSession session) {
 
-        // Redirect to login if user is not authenticated
+        //Redirect to login if user is not authenticated
         if (session.getAttribute("userEmail") == null) {
             return "redirect:/login";
         }
 
-        // Hardcoded date for development (can later be dynamic)
-        model.addAttribute("viewDate", "2026-02-22");
+        //Calculate daily totals, add to model
+        model.addAttribute("calories", dailyLog.getCalories());
+        model.addAttribute("protein", dailyLog.getProteins());
+        model.addAttribute("sugar", dailyLog.getSugars());
 
-        // Send food and log data to Thymeleaf template
-        model.addAttribute("foods", foods);
-        model.addAttribute("logs", logs);
-
-        // Calculate daily totals
-        double totalCalories = 0;
-        double totalProtein = 0;
-        double totalSugar = 0;
-
-        for (Map<String, Object> log : logs) {
-            totalCalories += (double) log.get("calories");
-            totalProtein += (double) log.get("protein");
-            totalSugar += (double) log.get("sugar");
-        }
-
-        // Add totals to model
-        model.addAttribute("calories", totalCalories);
-        model.addAttribute("protein", totalProtein);
-        model.addAttribute("sugar", totalSugar);
+        //Send food, log data, and the current date to Thymeleaf template
+        model.addAttribute("foods", getFoods());
+        model.addAttribute("logs", getLogs());
+        model.addAttribute("viewDate", java.time.LocalDate.now().toString());
 
         model.addAttribute("calorieGoal", calorieGoal);
         model.addAttribute("proteinGoal", proteinGoal);
@@ -65,11 +48,46 @@ public class DashboardController {
         return "dashboard";
     }
 
+    //Displays the foods management page
+    @GetMapping("/foods")
+    public String foods(Model model, HttpSession session) {
+
+        if (session.getAttribute("userEmail") == null) {
+            return "redirect:/login";
+        }
+
+        model.addAttribute("foods", getFoods());
+
+        return "foods";
+    }
+
+    //Handles food creation form submission. Adds a new food definition to in-memory storage
+    @PostMapping("/foods")
+    public String createFood(
+            @RequestParam String name,
+            @RequestParam double calories,
+            @RequestParam double protein,
+            @RequestParam double sugar,
+            RedirectAttributes ra) {
+
+        service.addFood(name, calories, protein, sugar);
+
+        ra.addFlashAttribute("msg", "Food added successfully");
+
+        return "redirect:/dashboard";
+    }
+
     @GetMapping("/goals")
-    public String goals(Model model) {
+    public String goals(Model model, HttpSession session) {
+
+        if (session.getAttribute("userEmail") == null) {
+            return "redirect:/login";
+        }
+
         model.addAttribute("calorieGoal", 2000);
         model.addAttribute("proteinGoal", 150);
         model.addAttribute("sugarGoal", 50);
+
         return "goals";
     }
 
@@ -78,69 +96,95 @@ public class DashboardController {
             @RequestParam double calorieGoal,
             @RequestParam double proteinGoal,
             @RequestParam double sugarGoal,
-            RedirectAttributes ra
-    ) {
-        this.calorieGoal = calorieGoal;
-        this.proteinGoal = proteinGoal;
-        this.sugarGoal = sugarGoal;
+            RedirectAttributes ra) {
 
-        ra.addFlashAttribute("msg", "Goals updated successfully");
+        service.addDailyGoal(calorieGoal, proteinGoal, sugarGoal);
+
+        ra.addFlashAttribute("msg", "Goals saved successfully");
+
         return "redirect:/goals";
     }
 
+    //Handles food logging form submission.
+    @PostMapping("/logs")
+    public String logFood(
+            @RequestParam String foodName,
+            @RequestParam double servings,
+            RedirectAttributes ra) {
 
-    //Displays the foods management page.
-    @GetMapping("/foods")
-    public String foods(Model model) {
-        model.addAttribute("foods", foods);
-        return "foods";
-    }
+        service.logFood(foodName, servings);
 
-    //Handles food creation form submission. Adds a new food definition to in-memory storage.
-    @PostMapping("/foods")
-    public String createFood(@RequestParam String name, @RequestParam double calories, @RequestParam double protein, @RequestParam double sugar, RedirectAttributes ra) {
-
-        // Store food as a Map
-        foods.add(Map.of(
-                "name", name,
-                "calories", calories,
-                "protein", protein,
-                "sugar", sugar
-        ));
-
-        // Flash confirmation message
-        ra.addFlashAttribute("msg", "Created food: " + name);
+        ra.addFlashAttribute("msg", "Food logged");
 
         return "redirect:/dashboard";
     }
 
+    //Returns the foods creatred
+    private List<FoodLog> getFoods() {
 
-    //Handles food logging form submission. Calculates nutrient totals and stores the result in logs list.
-    @PostMapping("/logs")
-    public String logFood(@RequestParam String foodName, @RequestParam double servings, @RequestParam(required = false) String date, RedirectAttributes ra)
-    {
-        for (Map<String, Object> food : foods) {
-            if (food.get("name").equals(foodName)) {
+        List<FoodLog> foods = new ArrayList<>();
 
-                double baseCalories = (double) food.get("calories");
-                double baseProtein = (double) food.get("protein");
-                double baseSugar = (double) food.get("sugar");
+        try (Connection conn = DatabaseManager.connect()) {
 
-                // Store calculated totals for logged serving
-                logs.add(Map.of(
-                        "foodName", foodName,
-                        "servings", servings,
-                        "calories", baseCalories * servings,
-                        "protein", baseProtein * servings,
-                        "sugar", baseSugar * servings
+            String sql = "SELECT name, calories, protein, sugar FROM foods";
+
+            PreparedStatement stmt = conn.prepareStatement(sql);
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+
+                foods.add(new FoodLog(
+                        rs.getString("name"),
+                        1,
+                        rs.getDouble("calories"),
+                        rs.getDouble("protein"),
+                        rs.getDouble("sugar")
                 ));
-
-                break;
             }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        // Flash confirmation message
-        ra.addFlashAttribute("msg", "Logged " + servings + " serving(s) of " + foodName);
-        return "redirect:/dashboard";
+        return foods;
+    }
+
+    //Returns the food log entries
+    private List<FoodLog> getLogs() {
+
+        List<FoodLog> logs = new ArrayList<>();
+
+        try (Connection conn = DatabaseManager.connect()) {
+
+            String sql = """
+                    SELECT f.name, l.servings,
+                    f.calories * l.servings AS calories,
+                    f.protein * l.servings AS protein,
+                    f.sugar * l.servings AS sugar
+                    FROM food_logs l
+                    JOIN foods f ON l.food_id = f.id
+                    """;
+
+            PreparedStatement stmt = conn.prepareStatement(sql);
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+
+                logs.add(new FoodLog(
+                        rs.getString("name"),
+                        rs.getDouble("servings"),
+                        rs.getDouble("calories"),
+                        rs.getDouble("protein"),
+                        rs.getDouble("sugar")
+                ));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return logs;
     }
 }
